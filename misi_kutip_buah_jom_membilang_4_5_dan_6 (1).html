@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MISI KUTIP BUAH: JOM MEMBILANG 4, 5 DAN 6!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Lexend+Deca:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Lexend Deca', sans-serif;
+            background-color: #87CEEB;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .font-fredoka {
+            font-family: 'Fredoka One', cursive;
+        }
+
+        /* Scenery & Background Animations */
+        .cloud {
+            animation: floatClouds 25s linear infinite;
+        }
+        @keyframes floatClouds {
+            0% { transform: translateX(-150px); }
+            100% { transform: translateX(100vw); }
+        }
+
+        /* Interactive Fruit Styling */
+        .fruit-item {
+            cursor: pointer;
+            transition: transform 0.2s ease, filter 0.2s ease;
+            filter: drop-shadow(0px 6px 4px rgba(0,0,0,0.25));
+            touch-action: none;
+        }
+        .fruit-item:hover {
+            transform: scale(1.12);
+            filter: drop-shadow(0px 8px 6px rgba(0,0,0,0.3));
+        }
+        .fruit-item:active {
+            transform: scale(0.95);
+        }
+
+        /* Gentle pulse for fruit guiding */
+        .pulse-gentle {
+            animation: pulseFruit 2s infinite ease-in-out;
+        }
+        @keyframes pulseFruit {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+        }
+
+        /* Basket Drop Target Glow */
+        .basket-glow {
+            animation: basketPulse 1.2s infinite alternate ease-in-out;
+        }
+        @keyframes basketPulse {
+            0% { filter: drop-shadow(0 0 5px rgba(255,255,255,0.4)); }
+            100% { filter: drop-shadow(0 0 20px rgba(255, 235, 59, 0.9)); }
+        }
+
+        /* Flying Fruit Animation Class */
+        .flying-fruit {
+            position: fixed;
+            z-index: 9999;
+            transition: all 0.75s cubic-bezier(0.25, 1, 0.5, 1);
+            pointer-events: none;
+        }
+
+        /* Celebration Particles */
+        .star-particle {
+            position: absolute;
+            pointer-events: none;
+            animation: starPop 1.2s ease-out forwards;
+        }
+        @keyframes starPop {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            50% { transform: scale(1.3) rotate(180deg); opacity: 0.9; }
+            100% { transform: scale(1) translate(var(--tw-translateX, 0), var(--tw-translateY, 100px)) rotate(360deg); opacity: 0; }
+        }
+
+        /* UI Dialog Transitions */
+        .modal-enter {
+            animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="relative flex flex-col justify-between h-screen w-screen overflow-hidden select-none bg-sky-300">
+
+    <!-- SKY & CLOUDS BACKGROUND -->
+    <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div class="cloud absolute top-6 left-[-100px] opacity-80">
+            <svg width="140" height="70" viewBox="0 0 100 50" fill="white"><path d="M10 40 Q20 20 40 25 Q50 10 70 20 Q90 20 90 40 Z"/></svg>
+        </div>
+        <div class="cloud absolute top-16 left-[-200px] opacity-60" style="animation-delay: -10s;">
+            <svg width="180" height="90" viewBox="0 0 100 50" fill="white"><path d="M10 40 Q20 20 40 25 Q50 10 70 20 Q90 20 90 40 Z"/></svg>
+        </div>
+        <div class="cloud absolute top-8 left-[-150px] opacity-90" style="animation-delay: -18s;">
+            <svg width="120" height="60" viewBox="0 0 100 50" fill="white"><path d="M10 40 Q20 20 40 25 Q50 10 70 20 Q90 20 90 40 Z"/></svg>
+        </div>
+        <!-- Sun -->
+        <div class="absolute top-4 right-6 w-20 h-20 bg-yellow-300 rounded-full border-4 border-yellow-200 shadow-lg animate-pulse"></div>
+    </div>
+
+    <!-- TOP HEADER / CONTROL BAR -->
+    <header class="relative z-10 flex flex-wrap items-center justify-between p-3 md:p-4 bg-white/90 backdrop-blur-md shadow-md border-b-4 border-amber-300 rounded-b-2xl mx-2 md:mx-6">
+        <!-- Title & Audio Controls -->
+        <div class="flex items-center space-x-2 md:space-x-4">
+            <button id="btn-sound" onclick="toggleSound()" class="p-2 md:p-3 bg-amber-400 hover:bg-amber-500 text-amber-950 font-bold rounded-2xl shadow-md transform active:scale-95 transition flex items-center gap-2 border-2 border-amber-600">
+                <span id="sound-icon" class="text-2xl md:text-3xl">🔊</span>
+                <span class="hidden sm:inline text-sm md:text-base">SUARA</span>
+            </button>
+            <button onclick="restartMission()" class="p-2 md:p-3 bg-amber-200 hover:bg-amber-300 text-amber-900 font-bold rounded-2xl shadow-md transform active:scale-95 transition border-2 border-amber-400 flex items-center gap-1">
+                <span class="text-xl md:text-2xl">🔄</span>
+                <span class="text-xs md:text-sm">ULANG MISI</span>
+            </button>
+        </div>
+
+        <!-- Mission Instructions & Counter -->
+        <div class="text-center my-1 md:my-0">
+            <h1 id="mission-title" class="font-fredoka text-xl md:text-3xl text-emerald-800 tracking-wide drop-shadow-sm">
+                MISI 1: KUTIP 4 EPAL!
+            </h1>
+            <p id="mission-sub" class="text-xs md:text-base font-bold text-emerald-700">
+                Seret atau ketik buah ke dalam bakul.
+            </p>
+        </div>
+
+        <!-- Progress Counter Box -->
+        <div class="bg-amber-100 border-4 border-amber-400 px-3 md:px-6 py-1 md:py-2 rounded-2xl shadow-inner flex items-center space-x-2">
+            <span class="text-xs md:text-sm font-bold text-amber-800 hidden sm:inline">KUTIPAN:</span>
+            <span id="progress-text" class="font-fredoka text-2xl md:text-4xl text-amber-900">0 / 4</span>
+        </div>
+    </header>
+
+    <!-- MAIN GAME CANVAS AREA -->
+    <main class="relative z-10 flex-1 flex flex-col md:flex-row items-center justify-between px-4 md:px-12 py-2 max-w-7xl mx-auto w-full">
+        
+        <!-- LEFT SIDE: TREE AREA -->
+        <div class="relative flex-1 w-full flex items-center justify-center h-[55vh] md:h-[65vh]">
+            <!-- Tree SVG Base -->
+            <div id="tree-container" class="relative w-full h-full max-w-md md:max-w-xl flex items-center justify-center">
+                <!-- SVG Tree -->
+                <svg id="tree-svg" class="w-full h-full filter drop-shadow-xl" viewBox="0 0 400 450" preserveAspectRatio="xMidYMid meet">
+                    <!-- Trunk -->
+                    <path d="M160 420 L160 250 Q160 200 130 170 Q170 180 200 230 Q230 180 270 170 Q240 200 240 250 L240 420 Z" fill="#8B4513" stroke="#5c2c0b" stroke-width="6"/>
+                    <path d="M170 420 L180 300 Q190 260 175 220" stroke="#6d340d" stroke-width="4" fill="none"/>
+                    <!-- Leaves / Canopy -->
+                    <circle cx="200" cy="180" r="110" fill="#2e7d32"/>
+                    <circle cx="130" cy="190" r="85" fill="#388e3c"/>
+                    <circle cx="270" cy="190" r="85" fill="#388e3c"/>
+                    <circle cx="160" cy="120" r="80" fill="#43a047"/>
+                    <circle cx="240" cy="120" r="80" fill="#43a047"/>
+                    <circle cx="200" cy="90" r="75" fill="#4caf50"/>
+                </svg>
+
+                <!-- Fruits Container (Overlayed on Tree) -->
+                <div id="fruits-container" class="absolute inset-0 pointer-events-auto">
+                    <!-- Fruit SVG Elements injected dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDE: BASKET DROP ZONE -->
+        <div class="relative w-full md:w-80 flex flex-col items-center justify-end h-[30vh] md:h-[60vh] pb-4">
+            
+            <!-- Target Basket Container -->
+            <div id="basket-zone" 
+                 class="relative cursor-pointer transition-transform duration-300 transform hover:scale-105 active:scale-95 flex flex-col items-center justify-center"
+                 onclick="handleBasketClick()">
+                
+                <!-- Basket Label / Hint -->
+                <div class="mb-2 bg-yellow-100 border-2 border-yellow-400 px-3 py-1 rounded-full text-xs md:text-sm font-bold text-yellow-800 shadow-sm animate-bounce">
+                    📥 MASUKKAN SINI
+                </div>
+
+                <!-- SVG Basket -->
+                <div class="relative w-48 md:w-64 h-36 md:h-48 flex items-center justify-center">
+                    <svg id="basket-svg" class="w-full h-full filter drop-shadow-2xl" viewBox="0 0 200 150">
+                        <!-- Basket Woven Body Background -->
+                        <path d="M20 50 L35 130 Q100 145 165 130 L180 50 Z" fill="#d97706" stroke="#92400e" stroke-width="5"/>
+                        <!-- Basket Rim -->
+                        <ellipse cx="100" cy="50" rx="82" ry="16" fill="#f59e0b" stroke="#92400e" stroke-width="5"/>
+                        <!-- Weave Pattern Details -->
+                        <path d="M30 70 Q100 85 170 70 M33 90 Q100 105 167 90 M36 110 Q100 125 164 110" fill="none" stroke="#b45309" stroke-width="3" stroke-dasharray="6,4"/>
+                        <path d="M60 55 L50 125 M90 55 L85 133 M120 55 L120 132 M150 55 L155 125" fill="none" stroke="#b45309" stroke-width="3"/>
+                        <!-- Handle -->
+                        <path d="M35 50 C 35 -10, 165 -10, 165 50" fill="none" stroke="#b45309" stroke-width="8" stroke-linecap="round"/>
+                        <path d="M35 50 C 35 -10, 165 -10, 165 50" fill="none" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+                    </svg>
+
+                    <!-- Collected Fruits Inside Basket -->
+                    <div id="collected-fruits-inside" class="absolute inset-x-0 top-6 bottom-4 flex flex-wrap items-center justify-center gap-1 p-4 pointer-events-none overflow-hidden">
+                        <!-- Dynamically inserted small SVG fruits inside basket -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- GROUND / GRASS DECORATION -->
+    <div class="relative z-0 h-16 md:h-24 bg-emerald-500 border-t-8 border-emerald-600 flex items-end justify-around px-4">
+        <div class="w-12 h-6 bg-emerald-400 rounded-t-full"></div>
+        <div class="w-20 h-8 bg-emerald-400 rounded-t-full"></div>
+        <div class="w-16 h-7 bg-emerald-400 rounded-t-full"></div>
+        <div class="w-24 h-9 bg-emerald-400 rounded-t-full"></div>
+    </div>
+
+    <!-- START / WELCOME MODAL OVERLAY -->
+    <div id="modal-start" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-gradient-to-b from-yellow-50 to-amber-100 border-8 border-amber-400 rounded-3xl p-6 md:p-8 max-w-lg w-full text-center shadow-2xl modal-enter">
+            <div class="text-5xl md:text-6xl mb-3">🧺 🍎 🍌 🍊</div>
+            <h2 class="font-fredoka text-2xl md:text-4xl text-amber-900 mb-2">MISI KUTIP BUAH</h2>
+            <p class="font-bold text-emerald-800 text-lg md:text-xl mb-4">JOM MEMBILANG 4, 5 DAN 6!</p>
+            <p class="text-gray-700 font-semibold mb-6 text-sm md:text-base leading-relaxed bg-white/70 p-4 rounded-2xl border border-amber-200">
+                Mari bantu petik buah-buahan di kebun dan masukkan ke dalam bakul secara teratur!
+            </p>
+            <button onclick="startGame()" class="w-full py-4 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-fredoka text-2xl rounded-2xl shadow-lg border-b-4 border-emerald-700 transition">
+                🚀 MULA PERMAINAN
+            </button>
+        </div>
+    </div>
+
+    <!-- MISSION COMPLETE MODAL OVERLAY -->
+    <div id="modal-mission-complete" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div class="bg-gradient-to-b from-green-50 to-emerald-100 border-8 border-emerald-400 rounded-3xl p-6 md:p-8 max-w-lg w-full text-center shadow-2xl modal-enter">
+            <div id="stars-row" class="flex justify-center space-x-2 text-4xl md:text-5xl mb-2">
+                ⭐ ⭐ ⭐
+            </div>
+            <h2 id="complete-title" class="font-fredoka text-2xl md:text-3xl text-emerald-900 mb-2">
+                TAHNIAH!
+            </h2>
+            <p id="complete-msg" class="font-bold text-emerald-800 text-base md:text-xl mb-6 bg-white/80 p-4 rounded-2xl border border-emerald-300">
+                SEMUA BUAH BERJAYA DIKUTIP!
+            </p>
+            <button onclick="nextMission()" class="w-full py-4 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-fredoka text-2xl rounded-2xl shadow-lg border-b-4 border-amber-700 transition">
+                MISI SETERUSNYA ➔
+            </button>
+        </div>
+    </div>
+
+    <!-- GAME COMPLETE / FINAL SUMMARY MODAL OVERLAY -->
+    <div id="modal-game-complete" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div class="bg-gradient-to-b from-amber-50 to-orange-100 border-8 border-amber-400 rounded-3xl p-6 md:p-8 max-w-xl w-full text-center shadow-2xl modal-enter">
+            <div class="text-5xl md:text-6xl mb-2">🏆 🎉 🌟</div>
+            <h2 class="font-fredoka text-3xl md:text-4xl text-amber-900 mb-2">SYABAS! MISI SELESAI!</h2>
+            <p class="font-bold text-amber-800 text-base md:text-lg mb-4">
+                Hari ini kita berjaya membilang 4, 5 dan 6!
+            </p>
+
+            <!-- Summary Cards for Fruits -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+                <div class="bg-white p-3 rounded-2xl border-2 border-red-300 shadow-sm flex flex-col items-center">
+                    <span class="text-3xl md:text-4xl">🍎</span>
+                    <span class="font-fredoka text-lg md:text-xl text-red-600 mt-1">4 EPAL</span>
+                </div>
+                <div class="bg-white p-3 rounded-2xl border-2 border-yellow-300 shadow-sm flex flex-col items-center">
+                    <span class="text-3xl md:text-4xl">🍌</span>
+                    <span class="font-fredoka text-lg md:text-xl text-yellow-600 mt-1">5 PISANG</span>
+                </div>
+                <div class="bg-white p-3 rounded-2xl border-2 border-orange-300 shadow-sm flex flex-col items-center">
+                    <span class="text-3xl md:text-4xl">🍊</span>
+                    <span class="font-fredoka text-lg md:text-xl text-orange-600 mt-1">6 OREN</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button onclick="restartFullGame()" class="flex-1 py-3.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-fredoka text-xl rounded-2xl shadow-md border-b-4 border-emerald-700 transition">
+                    🔄 MAIN LAGI
+                </button>
+                <button onclick="returnToMenu()" class="flex-1 py-3.5 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white font-fredoka text-xl rounded-2xl shadow-md border-b-4 border-sky-700 transition">
+                    🏠 MENU UTAMA
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ===================================================================
+           GAME STATE & CONFIGURATION
+           =================================================================== */
+        let currentMissionIndex = 0;
+        let collectedCount = 0;
+        let selectedFruitElement = null;
+        let isAudioMuted = false;
+        let isAnimating = false;
+
+        // Mission Definitions
+        const MISSIONS = [
+            {
+                id: 1,
+                title: "MISI 1: KUTIP 4 EPAL!",
+                sub: "Seret atau ketik epal ke dalam bakul.",
+                target: 4,
+                fruitType: "apple",
+                fruitName: "Epal",
+                completeMsg: "TAHNIAH! SEMUA 4 EPAL BERJAYA DIKUTIP!",
+                // Coordinates percentage positions on tree canopy for exact placement
+                positions: [
+                    { top: '22%', left: '32%' },
+                    { top: '28%', left: '58%' },
+                    { top: '48%', left: '25%' },
+                    { top: '50%', left: '62%' }
+                ]
+            },
+            {
+                id: 2,
+                title: "MISI 2: KUTIP 5 PISANG!",
+                sub: "Seret atau ketik pisang ke dalam bakul.",
+                target: 5,
+                fruitType: "banana",
+                fruitName: "Pisang",
+                completeMsg: "HEBAT! SEMUA 5 PISANG BERJAYA DIKUTIP!",
+                positions: [
+                    { top: '20%', left: '42%' },
+                    { top: '32%', left: '22%' },
+                    { top: '34%', left: '65%' },
+                    { top: '52%', left: '35%' },
+                    { top: '54%', left: '55%' }
+                ]
+            },
+            {
+                id: 3,
+                title: "MISI 3: KUTIP 6 OREN!",
+                sub: "Seret atau ketik oren ke dalam bakul.",
+                target: 6,
+                fruitType: "orange",
+                fruitName: "Oren",
+                completeMsg: "SYABAS! SEMUA 6 OREN BERJAYA DIKUTIP!",
+                positions: [
+                    { top: '18%', left: '40%' },
+                    { top: '28%', left: '22%' },
+                    { top: '28%', left: '62%' },
+                    { top: '48%', left: '18%' },
+                    { top: '48%', left: '42%' },
+                    { top: '52%', left: '68%' }
+                ]
+            }
+        ];
+
+        // Web Audio Synthesizer for instant sound effects without external file dependencies
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (isAudioMuted) return;
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'pop') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.12);
+                } else if (type === 'success') {
+                    // Upbeat major chord arpeggio
+                    const now = audioCtx.currentTime;
+                    const freqs = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                    freqs.forEach((f, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.frequency.value = f;
+                        g.gain.setValueAtTime(0.2, now + idx * 0.1);
+                        g.gain.linearRampToValueAtTime(0.01, now + idx * 0.1 + 0.25);
+                        o.start(now + idx * 0.1);
+                        o.stop(now + idx * 0.1 + 0.25);
+                    });
+                } else if (type === 'fanfare') {
+                    const now = audioCtx.currentTime;
+                    const notes = [392, 523.25, 659.25, 783.99];
+                    notes.forEach((f, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.type = 'triangle';
+                        o.frequency.value = f;
+                        g.gain.setValueAtTime(0.3, now + idx * 0.12);
+                        g.gain.linearRampToValueAtTime(0.01, now + idx * 0.12 + 0.4);
+                        o.start(now + idx * 0.12);
+                        o.stop(now + idx * 0.12 + 0.4);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio play error:", e);
+            }
+        }
+
+        // Web Speech API for Malay Voice Guidance
+        function speakMalay(text) {
+            if (isAudioMuted || !('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel(); // Stop ongoing speech
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ms-MY';
+            utterance.rate = 0.9; // Slightly slower for Special Education clarity
+            utterance.pitch = 1.1; // Friendly tone
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function toggleSound() {
+            isAudioMuted = !isAudioMuted;
+            document.getElementById('sound-icon').innerText = isAudioMuted ? '🔇' : '🔊';
+            if (isAudioMuted) {
+                window.speechSynthesis.cancel();
+            } else {
+                playSound('pop');
+            }
+        }
+
+        function getFruitSVG(type, width = 70, height = 70) {
+            if (type === 'apple') {
+                return `
+                <svg width="${width}" height="${height}" viewBox="0 0 100 100" class="fruit-item">
+                    <!-- Stem -->
+                    <path d="M50 22 C 48 10, 58 5, 62 2" fill="none" stroke="#5c2c0b" stroke-width="5" stroke-linecap="round"/>
+                    <!-- Leaf -->
+                    <path d="M52 16 Q 65 5, 72 15 Q 60 22, 52 16 Z" fill="#4caf50" stroke="#2e7d32" stroke-width="2"/>
+                    <!-- Apple Body -->
+                    <path d="M50 25 C 20 20, 5 40, 10 70 C 15 92, 40 98, 50 88 C 60 98, 85 92, 90 70 C 95 40, 80 20, 50 25 Z" fill="#e53935" stroke="#b71c1c" stroke-width="4"/>
+                    <!-- Highlight -->
+                    <ellipse cx="32" cy="42" rx="8" ry="14" fill="#ff8a80" transform="rotate(-25 32 42)" opacity="0.7"/>
+                </svg>`;
+            } else if (type === 'banana') {
+                return `
+                <svg width="${width}" height="${height}" viewBox="0 0 100 100" class="fruit-item">
+                    <!-- Stem top -->
+                    <path d="M22 22 L 28 16" stroke="#4a5d0e" stroke-width="6" stroke-linecap="round"/>
+                    <!-- Banana Body -->
+                    <path d="M25 20 C 50 25, 85 45, 80 82 C 78 88, 70 88, 66 80 C 60 52, 40 38, 22 30 Z" fill="#facc15" stroke="#ca8a04" stroke-width="4"/>
+                    <!-- Inner Ridge line -->
+                    <path d="M24 25 Q 50 38 72 78" fill="none" stroke="#eab308" stroke-width="3"/>
+                    <!-- End tip -->
+                    <circle cx="79" cy="81" r="3" fill="#4a5d0e"/>
+                </svg>`;
+            } else if (type === 'orange') {
+                return `
+                <svg width="${width}" height="${height}" viewBox="0 0 100 100" class="fruit-item">
+                    <!-- Stem & Leaf -->
+                    <path d="M50 18 L 50 10" fill="none" stroke="#3f6212" stroke-width="4"/>
+                    <path d="M50 14 Q 65 5, 68 18 Z" fill="#65a30d"/>
+                    <!-- Orange Body -->
+                    <circle cx="50" cy="55" r="38" fill="#f97316" stroke="#c2410c" stroke-width="4"/>
+                    <!-- Texture dimples -->
+                    <circle cx="35" cy="45" r="1.5" fill="#ea580c"/>
+                    <circle cx="62" cy="50" r="1.5" fill="#ea580c"/>
+                    <circle cx="45" cy="70" r="1.5" fill="#ea580c"/>
+                    <!-- Highlight -->
+                    <ellipse cx="36" cy="38" rx="7" ry="11" fill="#ffedd5" transform="rotate(-30 36 38)" opacity="0.6"/>
+                </svg>`;
+            }
+        }
+
+        function startGame() {
+            document.getElementById('modal-start').classList.add('hidden');
+            currentMissionIndex = 0;
+            loadMission(currentMissionIndex);
+        }
+
+        function loadMission(index) {
+            const mission = MISSIONS[index];
+            collectedCount = 0;
+            selectedFruitElement = null;
+
+            // Update UI Labels
+            document.getElementById('mission-title').innerText = mission.title;
+            document.getElementById('mission-sub').innerText = mission.sub;
+            document.getElementById('progress-text').innerText = `0 / ${mission.target}`;
+            document.getElementById('collected-fruits-inside').innerHTML = '';
+
+            // Voice announcement
+            speakMalay(`${mission.title}. ${mission.sub}`);
+
+            // Render Fruits on Tree
+            const container = document.getElementById('fruits-container');
+            container.innerHTML = '';
+
+            mission.positions.forEach((pos, i) => {
+                const fruitWrapper = document.createElement('div');
+                fruitWrapper.className = 'absolute pulse-gentle transition-all duration-300';
+                fruitWrapper.style.top = pos.top;
+                fruitWrapper.style.left = pos.left;
+                fruitWrapper.dataset.id = i;
+                fruitWrapper.dataset.type = mission.fruitType;
+
+                fruitWrapper.innerHTML = getFruitSVG(mission.fruitType, 75, 75);
+
+                // Add Touch & Click Event Listeners
+                fruitWrapper.addEventListener('click', (e) => onFruitClicked(fruitWrapper, e));
+                
+                // Drag and Drop (Mouse / Touch)
+                enableDragAndDrop(fruitWrapper);
+
+                container.appendChild(fruitWrapper);
+            });
+        }
+
+        function onFruitClicked(fruitElem, event) {
+            if (isAnimating) return;
+            // Prevent duplicate triggers if drag event occurred
+            collectFruit(fruitElem);
+        }
+
+        function handleBasketClick() {
+            // Helper for learners who tap basket directly if fruit was pre-selected
+            if (selectedFruitElement) {
+                collectFruit(selectedFruitElement);
+            }
+        }
+
+        function enableDragAndDrop(elem) {
+            let isDragging = false;
+            let startX, startY, origX, origY;
+
+            const onPointerDown = (e) => {
+                if (isAnimating) return;
+                isDragging = true;
+                selectedFruitElement = elem;
+                
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                startX = clientX;
+                startY = clientY;
+
+                elem.style.transition = 'none';
+                elem.style.zIndex = '1000';
+                playSound('pop');
+            };
+
+            const onPointerMove = (e) => {
+                if (!isDragging) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                const deltaX = clientX - startX;
+                const deltaY = clientY - startY;
+
+                elem.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.15)`;
+            };
+
+            const onPointerUp = (e) => {
+                if (!isDragging) return;
+                isDragging = false;
+
+                const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+                const clientY = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+
+                // Check collision with Basket Zone
+                const basketRect = document.getElementById('basket-zone').getBoundingClientRect();
+
+                if (
+                    clientX >= basketRect.left &&
+                    clientX <= basketRect.right &&
+                    clientY >= basketRect.top &&
+                    clientY <= basketRect.bottom
+                ) {
+                    // Dropped inside basket
+                    collectFruit(elem);
+                } else {
+                    // Reset position back to tree branch
+                    elem.style.transition = 'transform 0.4s ease';
+                    elem.style.transform = 'translate(0px, 0px)';
+                    elem.style.zIndex = '10';
+                }
+            };
+
+            // Touch events
+            elem.addEventListener('touchstart', onPointerDown, { passive: true });
+            window.addEventListener('touchmove', onPointerMove, { passive: true });
+            window.addEventListener('touchend', onPointerUp);
+
+            // Mouse events
+            elem.addEventListener('mousedown', onPointerDown);
+            window.addEventListener('mousemove', onPointerMove);
+            window.addEventListener('mouseup', onPointerUp);
+        }
+
+        function collectFruit(fruitElem) {
+            if (fruitElem.dataset.collected === "true" || isAnimating) return;
+            fruitElem.dataset.collected = "true";
+            isAnimating = true;
+
+            const mission = MISSIONS[currentMissionIndex];
+            const basketZone = document.getElementById('basket-zone');
+            const basketRect = basketZone.getBoundingClientRect();
+            const fruitRect = fruitElem.getBoundingClientRect();
+
+            // Calculate flight path offset
+            const deltaX = basketRect.left + basketRect.width / 2 - (fruitRect.left + fruitRect.width / 2);
+            const deltaY = basketRect.top + basketRect.height / 3 - (fruitRect.top + fruitRect.height / 3);
+
+            // Animate flying into basket
+            fruitElem.style.transition = 'all 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            fruitElem.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.5) rotate(20deg)`;
+            fruitElem.style.opacity = '0.9';
+
+            playSound('pop');
+
+            setTimeout(() => {
+                // Hide fruit from tree
+                fruitElem.style.visibility = 'hidden';
+
+                // Add small fruit copy inside basket
+                const basketInside = document.getElementById('collected-fruits-inside');
+                const miniFruit = document.createElement('div');
+                miniFruit.innerHTML = getFruitSVG(mission.fruitType, 42, 42);
+                miniFruit.className = 'animate-bounce';
+                basketInside.appendChild(miniFruit);
+
+                // Update Progress State
+                collectedCount++;
+                document.getElementById('progress-text').innerText = `${collectedCount} / ${mission.target}`;
+
+                // Audio & Voice Feedback
+                const numberWords = ["Satu", "Dua", "Tiga", "Empat", "Lima", "Enam"];
+                const spokenNum = numberWords[collectedCount - 1] || collectedCount;
+                
+                playSound('success');
+                speakMalay(`${spokenNum}!`);
+
+                // Basket Bounce Effect
+                basketZone.classList.add('basket-glow');
+                setTimeout(() => basketZone.classList.remove('basket-glow'), 600);
+
+                // Spawn celebratory stars
+                spawnStarParticles(basketRect.left + basketRect.width / 2, basketRect.top + basketRect.height / 2);
+
+                isAnimating = false;
+                selectedFruitElement = null;
+
+                // Check Mission Completion
+                if (collectedCount >= mission.target) {
+                    setTimeout(onMissionCompleted, 800);
+                }
+            }, 650);
+        }
+
+        function spawnStarParticles(x, y) {
+            const starEmojis = ['⭐', '🌟', '✨', '🎉'];
+            for (let i = 0; i < 8; i++) {
+                const star = document.createElement('div');
+                star.className = 'star-particle text-2xl md:text-3xl';
+                star.innerText = starEmojis[Math.floor(Math.random() * starEmojis.length)];
+                star.style.left = `${x}px`;
+                star.style.top = `${y}px`;
+
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 60 + Math.random() * 80;
+                const tx = Math.cos(angle) * dist;
+                const ty = Math.sin(angle) * dist - 30;
+
+                star.style.setProperty('--tw-translateX', `${tx}px`);
+                star.style.setProperty('--tw-translateY', `${ty}px`);
+
+                document.body.appendChild(star);
+                setTimeout(() => star.remove(), 1200);
+            }
+        }
+
+        function onMissionCompleted() {
+            const mission = MISSIONS[currentMissionIndex];
+            playSound('fanfare');
+
+            if (currentMissionIndex < MISSIONS.length - 1) {
+                // Show intermediate mission modal
+                document.getElementById('complete-title').innerText = "HEBAT & TAHNIAH!";
+                document.getElementById('complete-msg').innerText = mission.completeMsg;
+                document.getElementById('modal-mission-complete').classList.remove('hidden');
+                speakMalay(`${mission.completeMsg} Tekan butang misi seterusnya.`);
+            } else {
+                // All missions finished -> Show final Game Complete screen
+                document.getElementById('modal-game-complete').classList.remove('hidden');
+                speakMalay("Syabas! Misi kutip buah selesai. Hari ini kita berjaya membilang 4, 5 dan 6!");
+            }
+        }
+
+        function nextMission() {
+            document.getElementById('modal-mission-complete').classList.add('hidden');
+            currentMissionIndex++;
+            loadMission(currentMissionIndex);
+        }
+
+        function restartMission() {
+            playSound('pop');
+            loadMission(currentMissionIndex);
+        }
+
+        function restartFullGame() {
+            document.getElementById('modal-game-complete').classList.add('hidden');
+            currentMissionIndex = 0;
+            loadMission(currentMissionIndex);
+        }
+
+        function returnToMenu() {
+            document.getElementById('modal-game-complete').classList.add('hidden');
+            document.getElementById('modal-start').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
